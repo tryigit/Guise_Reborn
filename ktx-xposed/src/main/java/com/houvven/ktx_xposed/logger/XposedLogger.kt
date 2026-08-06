@@ -11,6 +11,9 @@ import android.util.Log
 import com.houvven.ktx_xposed.hook.ModernXposedRuntime
 import java.io.PrintWriter
 import java.io.StringWriter
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
@@ -20,6 +23,9 @@ object XposedLogger {
     private const val DEFAULT_CATEGORY = "Runtime"
     private const val MAX_MESSAGE_LENGTH = 1_024
     private const val MAX_STACK_TRACE_LENGTH = 4_096
+    private const val DELIVERY_BATCH_SIZE = 16
+    private const val DELIVERY_DELAY_MILLIS = 5_000L
+    private const val DELIVERY_RETRY_DELAY_MILLIS = 15_000L
 
     object Level {
         const val DEBUG = 'D'
@@ -36,6 +42,12 @@ object XposedLogger {
     private var deliveryToken: String? = null
     private var detailedLogging = false
     private var contextProvider: (() -> Context?)? = null
+    private val deliveryExecutor by lazy {
+        Executors.newSingleThreadScheduledExecutor { runnable ->
+            Thread(runnable, "Guise-RuntimeLog").apply { isDaemon = true }
+        }
+    }
+    private var scheduledDelivery: ScheduledFuture<*>? = null
 
     val currentCategory: String
         get() = categoryContext.get() ?: DEFAULT_CATEGORY
@@ -84,7 +96,7 @@ object XposedLogger {
     fun finishStartup() {
         startupCompleted = true
         tryAttachContextLocked()
-        flushPending()
+        scheduleDeliveryLocked()
     }
 
     @Synchronized
@@ -132,16 +144,34 @@ object XposedLogger {
             pendingEvents.removeFirst()
         }
         tryAttachContextLocked()
-        if (startupCompleted) flushPending()
+        if (startupCompleted) scheduleDeliveryLocked()
     }
 
     private fun tryAttachContextLocked() {
         if (applicationContext != null || deliveryToken == null || pendingEvents.isEmpty()) return
         val context = runCatching { contextProvider?.invoke() }.getOrNull() ?: return
         applicationContext = context.applicationContext ?: context
+        if (startupCompleted) scheduleDeliveryLocked()
     }
 
+    private fun scheduleDeliveryLocked(delayMillis: Long = DELIVERY_DELAY_MILLIS) {
+        if (applicationContext == null || pendingEvents.isEmpty()) return
+        if (pendingEvents.size >= DELIVERY_BATCH_SIZE) {
+            flushPending()
+            return
+        }
+        if (scheduledDelivery?.isDone == false) return
+        scheduledDelivery = deliveryExecutor.schedule(
+            { flushPending() },
+            delayMillis,
+            TimeUnit.MILLISECONDS,
+        )
+    }
+
+    @Synchronized
     private fun flushPending() {
+        scheduledDelivery?.cancel(false)
+        scheduledDelivery = null
         val context = applicationContext ?: return
         if (pendingEvents.isEmpty()) return
         val snapshot = pendingEvents.toList()
@@ -178,6 +208,7 @@ object XposedLogger {
                     module.log(Log.WARN, "$TAG_PREFIX/Logger", "Unable to deliver runtime logs", error)
                 }
             }
+            scheduleDeliveryLocked(DELIVERY_RETRY_DELAY_MILLIS)
         }
     }
 
