@@ -17,7 +17,7 @@ import com.houvven.guise.xposed.hook.TimeZoneHook
 import com.houvven.guise.xposed.hook.UniquelyIdHook
 import com.houvven.guise.xposed.hook.location.CellLocationHook
 import com.houvven.guise.xposed.hook.location.LocationHook
-import com.houvven.guise.xposed.hook.netowork.NetworkHook
+import com.houvven.guise.xposed.hook.network.NetworkHook
 import com.houvven.guise.xposed.other.ApplicationListPass
 import com.houvven.guise.xposed.other.BlankPass
 import com.houvven.ktx_xposed.LoadPackageHookAdapter

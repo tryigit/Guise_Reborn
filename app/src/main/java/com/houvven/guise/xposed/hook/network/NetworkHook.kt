@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package com.houvven.guise.xposed.hook.netowork
+package com.houvven.guise.xposed.hook.network
 
 import android.net.ConnectivityManager
 import android.net.Network
@@ -9,8 +9,8 @@ import android.net.NetworkInfo
 import com.houvven.guise.constant.NetworkType
 import com.houvven.guise.xposed.LoadPackageHandler
 import com.houvven.guise.xposed.config.HooksValue
-import com.houvven.ktx_xposed.hook.setMethodResult
 import com.houvven.ktx_xposed.hook.beforeHookedMethod
+import com.houvven.ktx_xposed.hook.setMethodResult
 
 internal class NetworkHook : LoadPackageHandler {
 
@@ -18,7 +18,6 @@ internal class NetworkHook : LoadPackageHandler {
         if (config.networkType != HooksValue.NET_UNHOOK) this.hookNetworkType()
         listOf(WifiHook(), SimHook()).forEach { it.onHook() }
     }
-
 
     private fun hookNetworkType() {
         val networkType = config.networkType
@@ -79,5 +78,4 @@ internal class NetworkHook : LoadPackageHandler {
         android.telephony.TelephonyManager.NETWORK_TYPE_NR -> "NR"
         else -> ""
     }
-
 }

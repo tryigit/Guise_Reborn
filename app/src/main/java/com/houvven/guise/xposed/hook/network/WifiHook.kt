@@ -1,4 +1,4 @@
-package com.houvven.guise.xposed.hook.netowork
+package com.houvven.guise.xposed.hook.network
 
 import android.net.wifi.WifiInfo
 import com.houvven.guise.xposed.LoadPackageHandler
@@ -12,5 +12,4 @@ internal class WifiHook : LoadPackageHandler {
             if (config.wifiMacAddress.isNotBlank()) setMethodResult("getMacAddress", config.wifiMacAddress)
         }
     }
-
 }

@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package com.houvven.guise.xposed.hook.netowork
+package com.houvven.guise.xposed.hook.network
 
 import android.telephony.CellIdentityCdma
 import android.telephony.CellIdentityGsm
@@ -69,7 +69,7 @@ internal class SimHook : LoadPackageHandler {
             CellIdentityLte::class.java,
             CellIdentityNr::class.java,
             CellIdentityTdscdma::class.java,
-            CellIdentityWcdma::class.java
+            CellIdentityWcdma::class.java,
         ).forEach {
             it.run {
                 findMethodExactIfExists("getMcc")?.setMethodResult(mccInt)
