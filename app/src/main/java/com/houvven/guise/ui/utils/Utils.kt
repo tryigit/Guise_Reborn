@@ -162,10 +162,7 @@ internal fun selectCompatibleAndroid(
         } == true
     }
     return supported.randomOrNull()
-        ?: androidVersions.filter {
-            it.value.substringAfter('|').toIntOrNull()?.let { api -> api >= MIN_PROFILE_API } == true
-        }.minByOrNull { it.value.substringAfter('|').toInt() }
-        ?: error("No compatible Android presets are available")
+        ?: error("No Android preset supports API $deviceApi")
 }
 
 private fun Int.isMobileNetwork(): Boolean =
