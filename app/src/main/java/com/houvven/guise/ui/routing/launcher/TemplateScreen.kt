@@ -57,6 +57,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.houvven.guise.R
 import com.houvven.guise.db.Template
+import com.houvven.guise.db.TemplateTransfer
 import com.houvven.guise.ui.GlobalSnackbarHost
 import com.houvven.guise.ui.components.simplify.SimplifyDropdownMenuItem
 import com.houvven.guise.ui.components.simplify.SimplifyIcon
@@ -71,9 +72,6 @@ import com.houvven.guise.xposed.config.ModuleConfig
 import com.houvven.guise.xposed.PackageConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 private object TemplateTypeFilter {
     const val ALL = -1
@@ -297,7 +295,7 @@ internal fun TemplateScreen() {
                         if (result == null) return@rememberLauncherForActivityResult
                         runCatching {
                             context.contentResolver.openInputStream(result)?.bufferedReader()?.use {
-                                Json.decodeFromString<List<Template>>(it.readText())
+                                TemplateTransfer.decode(it.readText())
                             } ?: error("Unable to open selected file")
                         }.onSuccess { templates ->
                             LauncherState.addTemplates(templates)
@@ -322,7 +320,7 @@ internal fun TemplateScreen() {
                         onClick = {
                             saveFileToDownloadDir(
                                 "Guise-Template-${System.currentTimeMillis()}.json",
-                                Json.encodeToString(LauncherState.templates.value)
+                                TemplateTransfer.encode(LauncherState.templates.value)
                             ).onSuccess {
                                 GlobalSnackbarHost.showByDismissPrevious(
                                     resources.getString(R.string.export_success, it)
