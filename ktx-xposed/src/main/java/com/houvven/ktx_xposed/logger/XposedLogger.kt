@@ -156,7 +156,7 @@ object XposedLogger {
 
     private fun scheduleDeliveryLocked(delayMillis: Long = DELIVERY_DELAY_MILLIS) {
         if (applicationContext == null || pendingEvents.isEmpty()) return
-        if (pendingEvents.size >= DELIVERY_BATCH_SIZE) {
+        if (delayMillis == DELIVERY_DELAY_MILLIS && pendingEvents.size >= DELIVERY_BATCH_SIZE) {
             flushPending()
             return
         }
