@@ -15,32 +15,33 @@ import com.houvven.ktx_xposed.hook.setMethodResult
 internal class NetworkHook : LoadPackageHandler {
 
     override fun onHook() {
-        if (config.networkType != HooksValue.NET_UNHOOK) hookNetworkType()
+        if (config.networkType != HooksValue.NET_UNHOOK) this.hookNetworkType()
         listOf(WifiHook(), SimHook()).forEach { it.onHook() }
     }
 
     private fun hookNetworkType() {
         val networkType = config.networkType
         if (networkType == HooksValue.NET_NONE) hideActiveNetwork()
-        hookBaseNetType(networkType)
+        this.hookBaseNetType(networkType)
         if (networkType != HooksValue.NET_WIFI) {
             SimHook().hookMobileType(networkType)
         }
     }
 
     private fun hookBaseNetType(type: Int) {
-        val baseType = when (type) {
+        val t = when (type) {
             HooksValue.NET_WIFI -> NetworkType.WIFI
             HooksValue.NET_MOBILE_5G,
             HooksValue.NET_MOBILE_4G,
             HooksValue.NET_MOBILE_3G,
             HooksValue.NET_MOBILE_2G -> NetworkType.MOBILE
+
             else -> NetworkType.NONE
         }
-        NetworkInfo::class.java.setMethodResult("getType", baseType)
+        NetworkInfo::class.java.setMethodResult("getType", t)
         NetworkInfo::class.java.setMethodResult(
             "getTypeName",
-            when (baseType) {
+            when (t) {
                 NetworkType.WIFI -> "WIFI"
                 NetworkType.MOBILE -> "MOBILE"
                 else -> "NONE"
@@ -49,18 +50,15 @@ internal class NetworkHook : LoadPackageHandler {
 
         val telephonyType = SimHook.mobileTelephonyType(type)
         NetworkInfo::class.java.setMethodResult("getSubtype", telephonyType)
-        NetworkInfo::class.java.setMethodResult(
-            "getSubtypeName",
-            telephonySubtypeName(telephonyType),
-        )
+        NetworkInfo::class.java.setMethodResult("getSubtypeName", telephonySubtypeName(telephonyType))
 
         NetworkCapabilities::class.java.beforeHookedMethod(
             "hasTransport",
             Int::class.javaPrimitiveType!!,
         ) { param ->
             when (param.args.firstOrNull() as? Int) {
-                NetworkCapabilities.TRANSPORT_WIFI -> param.result = baseType == NetworkType.WIFI
-                NetworkCapabilities.TRANSPORT_CELLULAR -> param.result = baseType == NetworkType.MOBILE
+                NetworkCapabilities.TRANSPORT_WIFI -> param.result = t == NetworkType.WIFI
+                NetworkCapabilities.TRANSPORT_CELLULAR -> param.result = t == NetworkType.MOBILE
             }
         }
     }
