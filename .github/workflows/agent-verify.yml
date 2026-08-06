@@ -1,6 +1,9 @@
 name: Agent verify
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - agent/refactor-network-and-batch-logs
