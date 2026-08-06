@@ -23,7 +23,15 @@ object RuntimeLogProtocol {
     const val DELIVERY_RECEIVER = "com.houvven.guise.log.RuntimeLogReceiver"
     const val DELIVERY_EVENTS_EXTRA = "events"
     const val DELIVERY_TOKEN_EXTRA = "token"
-    const val MAX_PENDING_EVENTS = 32
+
+    /** Bounded per-process ring buffer; the oldest event is discarded on overflow. */
+    const val MAX_PENDING_EVENTS = 64
+
+    /** Flush immediately when this many events have accumulated. */
+    const val MAX_DELIVERY_BATCH_SIZE = 50
+
+    /** Otherwise flush the current batch after this delay. */
+    const val DELIVERY_DELAY_MS = 5_000L
 
     private const val FORMAT_VERSION = "2"
     private val encoder = Base64.getUrlEncoder().withoutPadding()
