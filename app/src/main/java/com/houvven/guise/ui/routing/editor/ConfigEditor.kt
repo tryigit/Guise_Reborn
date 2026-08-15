@@ -50,11 +50,12 @@ import com.houvven.guise.util.android.Randoms
 import com.houvven.guise.xposed.config.ModuleConfigState
 import kotlin.math.roundToInt
 
-
 private val localSetValue = mutableStateOf({ _: String -> })
 private val localPreset = mutableStateOf(emptyList<PresetAdapter>())
-
 private val allBrands = DeviceDBHelper(ContextAmbient.current).use { it.getAllBrand() }
+private val advertisingIdPattern = Regex(
+    "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+)
 
 @Composable
 private fun ConfigEditorItems(state: ModuleConfigState, launch: () -> Unit) {
@@ -88,7 +89,6 @@ private fun ConfigEditorItems(state: ModuleConfigState, launch: () -> Unit) {
         },
     )
 
-
     val context = LocalContext.current
     val localConfiguration = LocalConfiguration.current
     val carrierPresets = remember(context) { CarrierPresetRepository.get(context) }
@@ -103,7 +103,6 @@ private fun ConfigEditorItems(state: ModuleConfigState, launch: () -> Unit) {
     val densitySummary = equivalentSmallestWidthDp?.let {
         stringResource(R.string.device_display_density_summary_with_dp, it)
     } ?: stringResource(R.string.device_display_density_summary)
-
 
     Title(text = stringResource(R.string.title_device_parameter), topPadding = 1.dp)
     PresetInputBox(
@@ -191,7 +190,16 @@ private fun ConfigEditorItems(state: ModuleConfigState, launch: () -> Unit) {
             buildId = generatedBuildId,
         )
     }
-
+    InputBox(state.gpuVendor, stringResource(R.string.device_gpu_vendor))
+    InputBox(state.gpuRenderer, stringResource(R.string.device_gpu_renderer))
+    InputBox(
+        state.cameraCount,
+        stringResource(R.string.device_camera_count),
+        supportingText = stringResource(R.string.device_camera_count_summary),
+        validate = { value ->
+            value.isEmpty() || value.toIntOrNull()?.let { it in 0..16 } == true
+        },
+    )
 
     Title(text = stringResource(R.string.title_net_info))
     PresetInputBox(
@@ -202,7 +210,6 @@ private fun ConfigEditorItems(state: ModuleConfigState, launch: () -> Unit) {
     InputBox(state.wifiSSID, stringResource(R.string.net_wifi_ssid))
     InputBox(state.wifiBSSID, stringResource(R.string.net_wifi_bssid))
     InputBox(state.wifiMacAddress, stringResource(R.string.net_wifi_mac))
-
 
     Title(text = stringResource(R.string.title_sim))
     PresetInputBox(
@@ -219,7 +226,6 @@ private fun ConfigEditorItems(state: ModuleConfigState, launch: () -> Unit) {
     InputBox(state.simOperatorName, stringResource(R.string.net_sim_name))
     InputBox(state.simCountry, stringResource(R.string.net_sim_iso))
 
-
     Title(text = stringResource(R.string.title_unique_id))
     RandomInputBox(
         state = state.imei,
@@ -233,12 +239,15 @@ private fun ConfigEditorItems(state: ModuleConfigState, launch: () -> Unit) {
     RandomInputBox(state.androidId, stringResource(R.string.id_ssaid)) {
         Randoms.randomAndroidId()
     }
-
+    RandomInputBox(
+        state = state.advertisingId,
+        label = stringResource(R.string.id_advertising),
+        validate = { value -> value.isEmpty() || advertisingIdPattern.matches(value) },
+    ) { Randoms.uuid() }
 
     Title(text = stringResource(R.string.title_cell_location))
     InputBox(state.lac, stringResource(R.string.gsm_lac))
     InputBox(state.cid, stringResource(R.string.gsm_cid))
-
 
     Title(
         text = stringResource(R.string.title_location_info),
@@ -266,11 +275,9 @@ private fun ConfigEditorItems(state: ModuleConfigState, launch: () -> Unit) {
         supportingText = stringResource(R.string.location_cell_fail_summary),
     )
 
-
     Title(text = stringResource(R.string.title_build_config))
     InputBox(state.versionCode, stringResource(R.string.build_config_version_code))
     InputBox(state.versionName, stringResource(R.string.build_config_version_name))
-
 
     Title(text = stringResource(R.string.title_other))
     RandomInputBox(
@@ -296,12 +303,21 @@ private fun ConfigEditorItems(state: ModuleConfigState, launch: () -> Unit) {
         supportingText = stringResource(R.string.other_time_zone_summary),
         randomGenerator = TimeZonePresetRepository::randomId,
     )
+    InputBox(
+        state.webViewUserAgent,
+        stringResource(R.string.other_webview_user_agent),
+        supportingText = stringResource(R.string.other_webview_user_agent_summary),
+    )
+    ContainerSwitch(
+        state.hideExternalAudioDevices,
+        stringResource(R.string.other_hide_external_audio_devices),
+        supportingText = stringResource(R.string.other_hide_external_audio_devices_summary),
+    )
     ContainerSwitch(
         state.allowForceScreenshots,
         stringResource(R.string.other_allow_force_screenshots),
         supportingText = stringResource(R.string.other_allow_force_screenshots_summary),
     )
-
 
     Title(text = stringResource(R.string.title_blank_pass))
     ContainerSwitch(state.passContacts, stringResource(R.string.pass_contacts))
@@ -314,10 +330,9 @@ private fun ConfigEditorItems(state: ModuleConfigState, launch: () -> Unit) {
         supportingText = stringResource(R.string.pass_applications_summary),
     )
 
-
-    // bottom blank 底部留白
     Spacer(modifier = Modifier.height(50.dp))
 }
+
 @Composable
 @OptIn(
     ExperimentalMaterial3Api::class,
@@ -386,5 +401,4 @@ internal fun ConfigEditorView(
     if (showPresets) {
         ModalBottomSheet(onDismissRequest = { showPresets = false }) { content() }
     }
-
 }
