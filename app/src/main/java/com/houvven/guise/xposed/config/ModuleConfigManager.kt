@@ -222,7 +222,7 @@ private constructor(
         simOperator = state.simOperator.value
         simOperatorName = state.simOperatorName.value
         simCountry = state.simCountry.value
-        simSlotCount = state.simSlotCount.value.toIntOrNull() ?: -1
+        visibleSimCount = state.visibleSimCount.value.toIntOrNull() ?: -1
         imei = state.imei.value
         phoneNum = state.phoneNum.value
         androidId = state.androidId.value
