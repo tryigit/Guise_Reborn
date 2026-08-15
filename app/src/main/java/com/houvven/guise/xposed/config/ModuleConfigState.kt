@@ -28,6 +28,7 @@ class ModuleConfigState private constructor(moduleConfig: ModuleConfig) {
     val simOperator = mutableStateOf(moduleConfig.simOperator)
     val simOperatorName = mutableStateOf(moduleConfig.simOperatorName)
     val simCountry = mutableStateOf(moduleConfig.simCountry)
+    val simSlotCount = mutableStateOf(moduleConfig.simSlotCount.display(-1))
 
     val imei = mutableStateOf(moduleConfig.imei)
     val phoneNum = mutableStateOf(moduleConfig.phoneNum)
@@ -71,8 +72,9 @@ class ModuleConfigState private constructor(moduleConfig: ModuleConfig) {
             brand, manufacturer, model, product, device, board, hardware, buildId,
             androidVersion, sdkInt, densityDpi, fingerPrint, gpuVendor, gpuRenderer, cameraCount,
             networkType, wifiSSID, wifiBSSID, wifiMacAddress, simOperator, simOperatorName,
-            simCountry, imei, phoneNum, androidId, advertisingId, lac, cid, longitude, latitude,
-            versionCode, versionName, batteryLevel, language, timeZone, webViewUserAgent,
+            simCountry, simSlotCount, imei, phoneNum, androidId, advertisingId, lac, cid,
+            longitude, latitude, versionCode, versionName, batteryLevel, language, timeZone,
+            webViewUserAgent,
         )
 
     private val booleanStates: List<MutableState<Boolean>>
