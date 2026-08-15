@@ -28,7 +28,7 @@ data class ModuleConfig(
     var simOperator: String = "",
     var simOperatorName: String = "",
     var simCountry: String = "",
-    var simSlotCount: Int = -1,
+    var visibleSimCount: Int = -1,
     var imei: String = "",
     var phoneNum: String = "",
     var androidId: String = "",
