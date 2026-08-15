@@ -1,0 +1,52 @@
+package com.houvven.guise.ui.utils
+
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Color
+import android.graphics.ImageDecoder
+import android.net.Uri
+import kotlin.math.roundToInt
+
+fun encodeTemplateQrBitmap(content: String): Bitmap {
+    val matrix = QrCodeCodec.encode(content)
+    val width = matrix.width
+    val height = matrix.height
+    val pixels = IntArray(width * height)
+    var offset = 0
+    repeat(height) { y ->
+        repeat(width) { x ->
+            pixels[offset++] = if (matrix[x, y]) Color.BLACK else Color.WHITE
+        }
+    }
+    return Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).apply {
+        setPixels(pixels, 0, width, 0, 0, width, height)
+    }
+}
+
+fun decodeTemplateQrImage(context: Context, uri: Uri): String {
+    val source = ImageDecoder.createSource(context.contentResolver, uri)
+    val bitmap = ImageDecoder.decodeBitmap(source) { decoder, info, _ ->
+        decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+        val width = info.size.width
+        val height = info.size.height
+        val longest = maxOf(width, height)
+        if (longest > MAX_QR_DECODE_DIMENSION) {
+            val scale = MAX_QR_DECODE_DIMENSION.toDouble() / longest
+            decoder.setTargetSize(
+                (width * scale).roundToInt().coerceAtLeast(1),
+                (height * scale).roundToInt().coerceAtLeast(1),
+            )
+        }
+    }
+    return try {
+        val width = bitmap.width
+        val height = bitmap.height
+        val pixels = IntArray(width * height)
+        bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
+        QrCodeCodec.decode(width, height, pixels)
+    } finally {
+        bitmap.recycle()
+    }
+}
+
+private const val MAX_QR_DECODE_DIMENSION = 2048
