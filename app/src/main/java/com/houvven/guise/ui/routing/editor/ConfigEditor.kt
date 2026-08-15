@@ -53,6 +53,12 @@ import kotlin.math.roundToInt
 private val localSetValue = mutableStateOf({ _: String -> })
 private val localPreset = mutableStateOf(emptyList<PresetAdapter>())
 private val allBrands = DeviceDBHelper(ContextAmbient.current).use { it.getAllBrand() }
+private val brandPresets = allBrands.map { (value, label) ->
+    object : PresetAdapter {
+        override val label: String = label
+        override val value: String = value
+    }
+}
 private val advertisingIdPattern = Regex(
     "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
 )
@@ -94,6 +100,25 @@ private fun ConfigEditorItems(state: ModuleConfigState, launch: () -> Unit) {
     val carrierPresets = remember(context) { CarrierPresetRepository.get(context) }
     val presetCatalog = remember(context) { PresetRepository.get(context) }
     val timeZonePresets = remember { TimeZonePresetRepository.presets }
+    val currentBrand = state.brand.value
+    val devicePresets = remember(context, currentBrand) {
+        DeviceDBHelper(context).use { dbHelper ->
+            dbHelper.getDevicesByBrand(currentBrand)
+                .filterNot { it.modelName.isNullOrBlank() || it.model.isNullOrBlank() }
+                .map {
+                    val name = if (it.verName == "#" || it.verName == null) it.modelName!!
+                    else "${it.modelName!!} (${it.verName.removePrefix("#")})"
+                    object : PresetAdapter {
+                        override val label: String = "$name · ${it.model}"
+                        override val value: String =
+                            "${it.model!!}:${it.codeAlias?.takeIf(String::isNotBlank) ?: it.code.orEmpty()}"
+                    }
+                }
+        }
+    }
+    val hasKnownBrand = remember(currentBrand) {
+        allBrands.keys.any { it.equals(currentBrand, ignoreCase = true) }
+    }
     val equivalentSmallestWidthDp = state.densityDpi.value.toIntOrNull()
         ?.takeIf { it in 72..1000 && localConfiguration.smallestScreenWidthDp > 0 }
         ?.let { targetDensityDpi ->
@@ -108,12 +133,7 @@ private fun ConfigEditorItems(state: ModuleConfigState, launch: () -> Unit) {
     PresetInputBox(
         state = state.brand,
         label = stringResource(R.string.device_brand),
-        preset = allBrands.map {
-            object : PresetAdapter {
-                override val label: String = it.value
-                override val value: String = it.key
-            }
-        },
+        preset = brandPresets,
         setValue = { value ->
             val previousBrand = state.brand.value
             state.brand.value = value
@@ -126,20 +146,8 @@ private fun ConfigEditorItems(state: ModuleConfigState, launch: () -> Unit) {
     PresetInputBox(
         state = state.model,
         label = stringResource(R.string.device_model),
-        preset = DeviceDBHelper(context).use { dbHelper ->
-            dbHelper.getDevicesByBrand(state.brand.value)
-                .filterNot { it.modelName.isNullOrBlank() || it.model.isNullOrBlank() }
-                .map {
-                    val name = if (it.verName == "#" || it.verName == null) it.modelName!!
-                    else "${it.modelName!!} (${it.verName.removePrefix("#")})"
-                    object : PresetAdapter {
-                        override val label: String = "$name · ${it.model}"
-                        override val value: String =
-                            "${it.model!!}:${it.codeAlias?.takeIf(String::isNotBlank) ?: it.code.orEmpty()}"
-                    }
-                }
-        },
-        showOperateIcon = allBrands.keys.any { it.equals(state.brand.value, ignoreCase = true) },
+        preset = devicePresets,
+        showOperateIcon = hasKnownBrand,
         setValue = { value ->
             val previousDevice = state.device.value
             state.model.value = value.substringBefore(":")
@@ -225,6 +233,12 @@ private fun ConfigEditorItems(state: ModuleConfigState, launch: () -> Unit) {
     }
     InputBox(state.simOperatorName, stringResource(R.string.net_sim_name))
     InputBox(state.simCountry, stringResource(R.string.net_sim_iso))
+    InputBox(
+        state.visibleSimCount,
+        stringResource(R.string.net_visible_sim_count),
+        supportingText = stringResource(R.string.net_visible_sim_count_summary),
+        validate = { value -> value.isEmpty() || value.toIntOrNull()?.let { it in 0..4 } == true },
+    )
 
     Title(text = stringResource(R.string.title_unique_id))
     RandomInputBox(
