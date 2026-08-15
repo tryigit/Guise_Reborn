@@ -4,6 +4,8 @@
     <string name="device_gpu_renderer">GPU renderer</string>
     <string name="device_camera_count">Visible camera count</string>
     <string name="device_camera_count_summary">Only limits cameras already exposed by Android; it does not invent unavailable hardware</string>
+    <string name="net_visible_sim_count">Visible active SIM count</string>
+    <string name="net_visible_sim_count_summary">Limits real active SubscriptionInfo entries; physical modem and slot counts are not fabricated</string>
     <string name="id_advertising">Advertising ID</string>
     <string name="other_webview_user_agent">WebView user agent</string>
     <string name="other_webview_user_agent_summary">Applied only to WebViews created inside the target app process</string>
