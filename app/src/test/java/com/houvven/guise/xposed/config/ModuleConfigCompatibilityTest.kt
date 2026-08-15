@@ -19,6 +19,7 @@ class ModuleConfigCompatibilityTest {
         assertEquals("", config.gpuRenderer)
         assertEquals("", config.webViewUserAgent)
         assertEquals(-1, config.cameraCount)
+        assertEquals(-1, config.visibleSimCount)
         assertFalse(config.hideExternalAudioDevices)
     }
 }
