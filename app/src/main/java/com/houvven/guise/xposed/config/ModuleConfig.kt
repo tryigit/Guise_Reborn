@@ -28,6 +28,7 @@ data class ModuleConfig(
     var simOperator: String = "",
     var simOperatorName: String = "",
     var simCountry: String = "",
+    var simSlotCount: Int = -1,
     var imei: String = "",
     var phoneNum: String = "",
     var androidId: String = "",
@@ -46,7 +47,6 @@ data class ModuleConfig(
     var webViewUserAgent: String = "",
     var cameraCount: Int = -1,
     var hideExternalAudioDevices: Boolean = false,
-
     var versionCode: Int = -1,
     var versionName: String = "",
     var batteryLevel: Int = -1,
