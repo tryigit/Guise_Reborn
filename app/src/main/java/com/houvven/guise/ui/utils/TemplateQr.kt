@@ -8,7 +8,7 @@ import android.net.Uri
 import kotlin.math.roundToInt
 
 fun encodeTemplateQrBitmap(content: String): Bitmap {
-    val matrix = QrCodeCodec.encode(content)
+    val matrix = QrCodeCodec.encode(QrCodeCodec.encodePayload(content))
     val width = matrix.width
     val height = matrix.height
     val pixels = IntArray(width * height)
@@ -43,7 +43,7 @@ fun decodeTemplateQrImage(context: Context, uri: Uri): String {
         val height = bitmap.height
         val pixels = IntArray(width * height)
         bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
-        QrCodeCodec.decode(width, height, pixels)
+        QrCodeCodec.decodePayload(QrCodeCodec.decode(width, height, pixels))
     } finally {
         bitmap.recycle()
     }
