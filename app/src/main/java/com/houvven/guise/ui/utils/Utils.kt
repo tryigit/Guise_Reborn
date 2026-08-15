@@ -66,6 +66,9 @@ suspend fun oneClickRandom(state: ModuleConfigState, context: Context) {
             androidVersion = version,
             buildId = generatedBuildId,
         )
+        gpuVendor.value = ""
+        gpuRenderer.value = ""
+        cameraCount.value = ""
 
         networkType.value = values.network.value
         applyNetworkSpecificValues(values.network.value.toIntOrNull(), values.carrier)
@@ -81,10 +84,13 @@ suspend fun oneClickRandom(state: ModuleConfigState, context: Context) {
         androidId.value = Randoms.randomAndroidId()
         imei.value = Randoms.randomIMEI()
         phoneNum.value = Randoms.randomPhoneNum()
+        advertisingId.value = Randoms.uuid()
 
         batteryLevel.value = Randoms.randomBatteryLevel().toString()
         language.value = values.language
         timeZone.value = TimeZonePresetRepository.randomId()
+        webViewUserAgent.value = ""
+        hideExternalAudioDevices.value = false
         versionCode.value = ""
         versionName.value = ""
     }
