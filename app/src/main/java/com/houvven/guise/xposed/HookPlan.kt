@@ -45,7 +45,8 @@ internal fun ModuleConfig.activeHookFeatures(): List<HookFeature> = buildList {
         wifiMacAddress.isNotBlank() ||
         simOperator.isNotBlank() ||
         simOperatorName.isNotBlank() ||
-        simCountry.isNotBlank()
+        simCountry.isNotBlank() ||
+        visibleSimCount >= 0
     ) {
         add(HookFeature.NETWORK)
     }
