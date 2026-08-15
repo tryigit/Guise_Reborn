@@ -72,6 +72,7 @@ suspend fun oneClickRandom(state: ModuleConfigState, context: Context) {
 
         networkType.value = values.network.value
         applyNetworkSpecificValues(values.network.value.toIntOrNull(), values.carrier)
+        visibleSimCount.value = ""
 
         Randoms.randomCoordinates().let { (lat, lon) ->
             latitude.value = lat.toString()
