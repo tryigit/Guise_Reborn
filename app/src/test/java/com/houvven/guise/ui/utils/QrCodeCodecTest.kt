@@ -1,14 +1,23 @@
 package com.houvven.guise.ui.utils
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class QrCodeCodecTest {
 
     @Test
-    fun qrPayloadRoundTripsWithoutAndroidBitmap() {
-        val payload = "{\"schemaVersion\":1,\"templates\":[{\"id\":\"demo\"}]}"
-        val matrix = QrCodeCodec.encode(payload, 256)
+    fun compressedQrPayloadRoundTripsWithoutAndroidBitmap() {
+        val json = buildString {
+            append("{\"schemaVersion\":1,\"templates\":[{")
+            append("\"id\":\"demo\",\"configuration\":\"")
+            repeat(100) { append("device-profile-") }
+            append("\"}]}")
+        }
+        val payload = QrCodeCodec.encodePayload(json)
+        assertTrue(payload.startsWith("guise1:"))
+
+        val matrix = QrCodeCodec.encode(payload, 512)
         val pixels = IntArray(matrix.width * matrix.height)
         var offset = 0
         repeat(matrix.height) { y ->
@@ -17,7 +26,13 @@ class QrCodeCodecTest {
             }
         }
 
-        assertEquals(payload, QrCodeCodec.decode(matrix.width, matrix.height, pixels))
+        val decoded = QrCodeCodec.decode(matrix.width, matrix.height, pixels)
+        assertEquals(json, QrCodeCodec.decodePayload(decoded))
+    }
+
+    @Test
+    fun legacyUncompressedPayloadStillDecodes() {
+        assertEquals("legacy", QrCodeCodec.decodePayload("legacy"))
     }
 
     private companion object {
