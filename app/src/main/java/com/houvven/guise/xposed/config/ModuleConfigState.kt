@@ -17,6 +17,9 @@ class ModuleConfigState private constructor(moduleConfig: ModuleConfig) {
     val sdkInt = mutableStateOf(moduleConfig.sdkInt.display(-1))
     val densityDpi = mutableStateOf(moduleConfig.densityDpi.display(-1))
     val fingerPrint = mutableStateOf(moduleConfig.fingerPrint)
+    val gpuVendor = mutableStateOf(moduleConfig.gpuVendor)
+    val gpuRenderer = mutableStateOf(moduleConfig.gpuRenderer)
+    val cameraCount = mutableStateOf(moduleConfig.cameraCount.display(-1))
 
     val networkType = mutableStateOf(moduleConfig.networkType.display(HooksValue.NET_UNHOOK))
     val wifiSSID = mutableStateOf(moduleConfig.wifiSSID)
@@ -29,6 +32,7 @@ class ModuleConfigState private constructor(moduleConfig: ModuleConfig) {
     val imei = mutableStateOf(moduleConfig.imei)
     val phoneNum = mutableStateOf(moduleConfig.phoneNum)
     val androidId = mutableStateOf(moduleConfig.androidId)
+    val advertisingId = mutableStateOf(moduleConfig.advertisingId)
 
     val lac = mutableStateOf(moduleConfig.lac.display(-1))
     val cid = mutableStateOf(moduleConfig.cid.display(-1))
@@ -45,6 +49,8 @@ class ModuleConfigState private constructor(moduleConfig: ModuleConfig) {
     val batteryLevel = mutableStateOf(moduleConfig.batteryLevel.display(-1))
     val language = mutableStateOf(moduleConfig.language)
     val timeZone = mutableStateOf(moduleConfig.timeZone)
+    val webViewUserAgent = mutableStateOf(moduleConfig.webViewUserAgent)
+    val hideExternalAudioDevices = mutableStateOf(moduleConfig.hideExternalAudioDevices)
     val allowForceScreenshots = mutableStateOf(
         moduleConfig.screenshotsFlag == HooksValue.SCREENSHOTS_ENABLE
     )
@@ -63,16 +69,15 @@ class ModuleConfigState private constructor(moduleConfig: ModuleConfig) {
     private val stringStates: List<MutableState<String>>
         get() = listOf(
             brand, manufacturer, model, product, device, board, hardware, buildId,
-            androidVersion, sdkInt, densityDpi,
-            fingerPrint,
+            androidVersion, sdkInt, densityDpi, fingerPrint, gpuVendor, gpuRenderer, cameraCount,
             networkType, wifiSSID, wifiBSSID, wifiMacAddress, simOperator, simOperatorName,
-            simCountry, imei, phoneNum, androidId, lac, cid, longitude, latitude, versionCode,
-            versionName, batteryLevel, language, timeZone,
+            simCountry, imei, phoneNum, androidId, advertisingId, lac, cid, longitude, latitude,
+            versionCode, versionName, batteryLevel, language, timeZone, webViewUserAgent,
         )
 
     private val booleanStates: List<MutableState<Boolean>>
         get() = listOf(
-            randomOffset, makeWifiLocationFail, makeCellLocationFail,
+            randomOffset, makeWifiLocationFail, makeCellLocationFail, hideExternalAudioDevices,
             allowForceScreenshots, passContacts, passPhoto, passVideo, passAudio, passApplications,
         )
 
