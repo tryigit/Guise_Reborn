@@ -11,16 +11,15 @@ fun encodeTemplateQrBitmap(content: String): Bitmap {
     val matrix = QrCodeCodec.encode(QrCodeCodec.encodePayload(content))
     val width = matrix.width
     val height = matrix.height
-    val pixels = IntArray(width * height)
-    var offset = 0
+    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
+    val row = IntArray(width)
     repeat(height) { y ->
         repeat(width) { x ->
-            pixels[offset++] = if (matrix[x, y]) Color.BLACK else Color.WHITE
+            row[x] = if (matrix[x, y]) Color.BLACK else Color.WHITE
         }
+        bitmap.setPixels(row, 0, width, 0, y, width, 1)
     }
-    return Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).apply {
-        setPixels(pixels, 0, width, 0, 0, width, height)
-    }
+    return bitmap
 }
 
 fun decodeTemplateQrImage(context: Context, uri: Uri): String {
@@ -49,4 +48,4 @@ fun decodeTemplateQrImage(context: Context, uri: Uri): String {
     }
 }
 
-private const val MAX_QR_DECODE_DIMENSION = 2048
+private const val MAX_QR_DECODE_DIMENSION = 1024
